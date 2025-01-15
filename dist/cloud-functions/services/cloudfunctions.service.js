@@ -143,6 +143,8 @@ let CloudFunctionsService = class CloudFunctionsService {
             const emailTemplate = path.join(__dirname, "../../utils/email_templates/unread_messages.html");
             for (const [chatId, data] of messagesByChat) {
                 // Enviar email al coach
+                console.log(JSON.stringify(data));
+                console.log(data);
                 await this.emailService.sendEmail(data.coach.email, "Tienes mensajes sin leer en el chat", emailTemplate, {
                     coach_name: data.coach.firstName,
                     messages: JSON.stringify(data.messages.map((m) => ({

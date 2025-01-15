@@ -8,36 +8,16 @@ import { firstValueFrom } from "rxjs";
 
 @Injectable()
 export class EmailService {
-  private transporter: nodemailer.Transporter;
+  private readonly sender: { name: string; email: string };
 
-  constructor(private configService: ConfigService) {
-    // Obtener las credenciales del ConfigService
-    const apiKey = this.configService.get<string>('SMTP_API_KEY');
-    const mailFrom = this.configService.get<string>('MAIL_FROM');
-
-    this.transporter = nodemailer.createTransport({
-      host: "smtp-relay.sendinblue.com",
-      port: 587,
-      auth: {
-        user: apiKey, // Usar el email como usuario
-        pass: apiKey // Usar la API key como contraseña
-      },
-      secure: false,
-      debug: true, // Habilitar logs de debug
-      logger: true, // Habilitar logger
-      tls: {
-        rejectUnauthorized: false
-      }
-    } as nodemailer.TransportOptions);
-
-    // Verificar la conexión
-    this.transporter.verify((error) => {
-      if (error) {
-        console.error('Error al verificar el transporter:', error);
-      } else {
-        console.log('Servidor SMTP listo');
-      }
-    });
+  constructor(
+    private configService: ConfigService,
+    private readonly httpService: HttpService,
+  ) {
+    this.sender = {
+      name: this.configService.get<string>('MAIL_FROM_NAME') || "no-reply",
+      email: this.configService.get<string>('MAIL_FROM') || "ignacio.seco@agsbyte.cl",
+    };
 
     // Registrar el helper de Handlebars
     Handlebars.registerHelper("JSONstringify", function (context) {
@@ -49,23 +29,35 @@ export class EmailService {
     to: string,
     subject: string,
     template: string,
-    variables: { [key: string]: string }
+    variables: { [key: string]: any }
   ): Promise<void> {
     const html = this.renderTemplate(template, variables);
 
-    const mailOptions: nodemailer.SendMailOptions = {
-      from: `"${this.configService.get<string>('MAIL_FROM_NAME')}" <${this.configService.get<string>('MAIL_FROM')}>`,
-      to,
+    const body = {
+      sender: this.sender,
+      to: [
+        {
+          name: to,
+          email: to,
+        },
+      ],
       subject,
-      html
+      htmlContent: html,
     };
 
-    await this.transporter.sendMail(mailOptions);
+    await firstValueFrom(
+      this.httpService.post('https://api.sendinblue.com/v3/smtp/email', body, {
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': this.configService.get<string>('SMTP_API_KEY'),
+        },
+      }),
+    );
   }
 
   private renderTemplate(
     template: string,
-    variables: { [key: string]: string }
+    variables: { [key: string]: any }
   ): string {
     const templateReaded = Handlebars.compile(
       readFileSync(template, { encoding: "utf-8" })

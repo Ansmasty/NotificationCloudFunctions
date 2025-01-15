@@ -34,39 +34,19 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmailService = void 0;
 const config_1 = require("@nestjs/config");
+const axios_1 = require("@nestjs/axios");
 const common_1 = require("@nestjs/common");
 const fs_1 = require("fs");
 const Handlebars = __importStar(require("handlebars"));
-const nodemailer = __importStar(require("nodemailer"));
+const rxjs_1 = require("rxjs");
 let EmailService = class EmailService {
-    constructor(configService) {
+    constructor(configService, httpService) {
         this.configService = configService;
-        // Obtener las credenciales del ConfigService
-        const apiKey = this.configService.get('SMTP_API_KEY');
-        const mailFrom = this.configService.get('MAIL_FROM');
-        this.transporter = nodemailer.createTransport({
-            host: "smtp-relay.sendinblue.com",
-            port: 587,
-            auth: {
-                user: apiKey,
-                pass: apiKey // Usar la API key como contraseña
-            },
-            secure: false,
-            debug: true,
-            logger: true,
-            tls: {
-                rejectUnauthorized: false
-            }
-        });
-        // Verificar la conexión
-        this.transporter.verify((error) => {
-            if (error) {
-                console.error('Error al verificar el transporter:', error);
-            }
-            else {
-                console.log('Servidor SMTP listo');
-            }
-        });
+        this.httpService = httpService;
+        this.sender = {
+            name: this.configService.get('MAIL_FROM_NAME') || "no-reply",
+            email: this.configService.get('MAIL_FROM') || "ignacio.seco@agsbyte.cl",
+        };
         // Registrar el helper de Handlebars
         Handlebars.registerHelper("JSONstringify", function (context) {
             return JSON.stringify(context);
@@ -74,13 +54,23 @@ let EmailService = class EmailService {
     }
     async sendEmail(to, subject, template, variables) {
         const html = this.renderTemplate(template, variables);
-        const mailOptions = {
-            from: `"${this.configService.get('MAIL_FROM_NAME')}" <${this.configService.get('MAIL_FROM')}>`,
-            to,
+        const body = {
+            sender: this.sender,
+            to: [
+                {
+                    name: to,
+                    email: to,
+                },
+            ],
             subject,
-            html
+            htmlContent: html,
         };
-        await this.transporter.sendMail(mailOptions);
+        await (0, rxjs_1.firstValueFrom)(this.httpService.post('https://api.sendinblue.com/v3/smtp/email', body, {
+            headers: {
+                'Content-Type': 'application/json',
+                'api-key': this.configService.get('SMTP_API_KEY'),
+            },
+        }));
     }
     renderTemplate(template, variables) {
         const templateReaded = Handlebars.compile((0, fs_1.readFileSync)(template, { encoding: "utf-8" }));
@@ -89,6 +79,7 @@ let EmailService = class EmailService {
 };
 EmailService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [config_1.ConfigService])
+    __metadata("design:paramtypes", [config_1.ConfigService,
+        axios_1.HttpService])
 ], EmailService);
 exports.EmailService = EmailService;

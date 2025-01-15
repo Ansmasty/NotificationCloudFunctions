@@ -9,6 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CloudFunctionsModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const axios_1 = require("@nestjs/axios");
 const email_service_1 = require("../utils/email.service");
 const cloudfunctions_service_1 = require("./services/cloudfunctions.service");
 let CloudFunctionsModule = class CloudFunctionsModule {
@@ -20,6 +21,7 @@ CloudFunctionsModule = __decorate([
                 isGlobal: true,
                 envFilePath: '.env',
             }),
+            axios_1.HttpModule,
         ],
         providers: [cloudfunctions_service_1.CloudFunctionsService, email_service_1.EmailService],
         exports: [cloudfunctions_service_1.CloudFunctionsService, email_service_1.EmailService],

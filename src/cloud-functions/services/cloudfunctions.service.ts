@@ -145,6 +145,8 @@ export class CloudFunctionsService {
 
       for (const [chatId, data] of messagesByChat) {
         // Enviar email al coach
+        console.log(JSON.stringify(data));
+        console.log(data);
         await this.emailService.sendEmail(
           data.coach.email,
           "Tienes mensajes sin leer en el chat",
