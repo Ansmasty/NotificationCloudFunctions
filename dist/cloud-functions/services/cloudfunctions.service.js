@@ -147,12 +147,12 @@ let CloudFunctionsService = class CloudFunctionsService {
                 console.log(data);
                 await this.emailService.sendEmail(data.coach.email, "Tienes mensajes sin leer en el chat", emailTemplate, {
                     coach_name: data.coach.firstName,
-                    messages: JSON.stringify(data.messages.map((m) => ({
+                    messages: data.messages.map((m) => ({
                         sender: m.sender_name,
                         text: m.message_text,
                         time: new Date(m.sent_at).toLocaleString(),
                         type: m.type,
-                    })))
+                    }))
                 });
                 // Registrar notificaciones
                 await this.db("message_notifications").insert(data.messages.map((m) => ({

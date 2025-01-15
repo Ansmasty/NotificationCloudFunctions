@@ -82,7 +82,7 @@
       <h2>Hola {{coach_name}},</h2>
       <p>Tienes los siguientes mensajes sin leer:</p>
     
-      {{#each (JSONstringify messages)}}
+      {{#each messages}}
       <div class="chat">
         <div class="chat-header">
           <p><strong>De:</strong> {{sender}}</p>
