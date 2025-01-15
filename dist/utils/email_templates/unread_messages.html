@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mensajes sin leer - Squat Fit</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    /* Header */
+    .header {
+      background-color: #FF690B;
+      padding: 10px;
+      text-align: center;
+      color: white;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+    /* Body */
+    .body {
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    /* Chat */
+    .chat {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #eee;
+      background-color: #f0f0f0a9;
+    }
+    .chat-header {
+      border: 1px solid #eee;
+      background-color: #f0f0f0ec;
+    }
+    .chat-send {
+      color: #666;
+    }
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 10px;
+      color: white;
+      background-color: #FF690B;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
+
+
+    /* Estilos para dispositivos pequeños */
+    @media screen and (max-width: 480px) {
+      .footer {
+        padding: 10px;
+      }
+      .footer a {
+        display: block;
+        background-color: #FF690B;
+        color: white;
+        padding: 10px;
+        border-radius: 10px;
+        text-decoration: none;
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      Mensajes sin leer - Squat Fit
+    </div>
+    <div class="body">
+      <h2>Hola {{coach_name}},</h2>
+      <p>Tienes los siguientes mensajes sin leer:</p>
+    
+      {{#each (JSONstringify messages)}}
+      <div class="chat">
+        <div class="chat-header">
+          <p><strong>De:</strong> {{sender}}</p>
+        </div>
+        <div class="chat-body">
+
+          <div class="chat-message">
+            <p>{{text}}</p>
+            <p class="chat-send"><small>Enviado: {{time}} </small></p>
+          </div>
+          
+        </div>
+      </div>
+    {{/each}}
+
+    </div>
+    <div class="footer">
+      Squat Fit
+    </div>
+  </div>
+</body>
+</html>
